@@ -2,11 +2,18 @@
 identification division.
 program-id. Area1.
 environment division.
-configuration section.
-special-names.
+input-output section.
+file-control.
+       select Book1 assign to "Book1.txt"
+       organization is line sequential
+       access is sequential.
 
 data division.
 file section.
+fd Book1.
+
+ 01 Paragraph1 PIC X(99).
+ 01 Paragraph2 PIC X(99).
 working-storage section.
 01 choice pic x(99).
 01 NumberChoice pic 9(2).
@@ -16,6 +23,15 @@ working-storage section.
 01 Attack pic 9(3) value 0.
 
 01 ListLength pic 9(2) value 0.
+
+01 StringLength pic 9(2) value 0.
+
+01  ModifiedString     PIC X(50).
+
+ 01 wsParagraphs.
+           02 wsParagraph1 pic x(99).
+           02 wsParagraph2 pic x(99). 
+
 
 01 Player.
        02 CurrentRoom pic x(99) value "Room1".
@@ -106,7 +122,6 @@ working-storage section.
        02 ws-diff-from-gmt pic s9(4).   
 
 procedure division.
-
 perform until choice="Quit" or "quit"    
        
        *>Room1
@@ -152,6 +167,7 @@ perform until choice="Quit" or "quit"
                             
                 end-if
               end-perform
+           
            end-if
                     move 0 to Indx 
            end-if
@@ -251,7 +267,12 @@ perform until choice="Quit" or "quit"
                        exit perform     
                    end-if
                    end-perform
+
                 end-if	
+                if choice = "b" or "B" then
+                   perform FillFile 
+                   display "You have found a book"
+                   end-if
     if choice="back" or "Back" then
            move "Hallway" to CurrentRoom
            move "LeftHallRoom" to PreviousRoom
@@ -278,6 +299,8 @@ perform until choice="Quit" or "quit"
        end-if
 
 end-perform
+
+perform ClearFile
 
 stop run.
 
@@ -346,7 +369,29 @@ Stats section.
  exit section.
 
 
+FillFile section.
 
+       open extend Book1.
+         move "You have entered the castle. You are in a dimly lit," to Paragraph1
+           write Paragraph1
+         move "expansive room with priceless antiques and artworks in a state of abandoned."  to Paragraph2          
+           write Paragraph2
+            
+        end-write.
+            	
+close Book1.
+
+ClearFile section.
+
+         open output Book1.
+            move spaces to Paragraph1
+              write Paragraph1
+            move spaces to Paragraph2          
+              write Paragraph2
+                
+          end-write.
+
+close Book1.
 
 
 

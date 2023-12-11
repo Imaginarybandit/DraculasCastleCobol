@@ -13,31 +13,42 @@ data division.
            03 InventoryItem pic x(25) .   
            03 InventoryItemType pic x(25). 
            03 InventoryItemDef pic s9(3) value 0.
-           03 InventoryItemAttack pic s9(3) value 0.
-
-       01 res1 pic x(99).
-       01 res2 pic x(99).   
+           03 InventoryItemAttack pic s9(3) value 0.  
        
        01 Indx pic 99.
        01 IsLocked pic 99.
 
        01 Item pic x(99) value spaces.
 
-         01 WS-Count pic 99.
-procedure division using PlayerInventory,res1,res2,IsLocked,Indx,Item,WS-Count.
+       01 WS-Count PIC 9.
 
-    display "Inventory:"
-    perform varying Indx from 1 by 1 until Indx> 15
-     inspect Item tallying WS-Count for all InventoryItem(Indx) characters
-       if WS-Count > 0 then
-             if InventoryItem(Indx)="Hallway Key" then
-                 move 0 to IsLocked
-                 display res1
-              exit perform
-                                                  
-        end-if               
-        end-perform
-   
-   
+       01 UseItemChoice pic 9(2).
 
-    exit program.
+      01 StringLength pic 9(2) value 0.
+
+      01  ModifiedString  PIC X(50).
+
+procedure division using PlayerInventory,IsLocked,Indx,Item,WS-Count,UseItemChoice,StringLength,ModifiedString.
+       
+       
+       perform varying Indx from 1 by 1 until Indx> 15
+         if InventoryItemIndex(Indx) = UseItemChoice
+        
+           
+  move function length(ModifiedString) to StringLength
+       display Item
+       inspect Item tallying WS-Count for all InventoryItem(Indx) characters
+       display "WS-Count: " WS-Count
+       if WS-Count >0 then
+           move 0 to IsLocked
+           display "You use the " InventoryItem(Indx)
+           exit perform
+       else                                           
+
+       display "You don't have that item."
+       exit perform
+
+       end-if
+       end-perform
+       
+       exit program.
