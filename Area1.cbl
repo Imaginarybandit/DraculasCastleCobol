@@ -15,6 +15,8 @@ working-storage section.
 
 01 Attack pic 9(3) value 0.
 
+01 ListLength pic 9(2) value 0.
+
 01 Player.
        02 CurrentRoom pic x(99) value "Room1".
        02 PreviousRoom pic x(99).
@@ -45,6 +47,8 @@ working-storage section.
            03 InventoryItemAttack pic s9(3) value 0.      
 
 01 EquipChoice pic 9(2).
+
+01 UseItemChoice pic 9(2).
 
 
 01 Room1.
@@ -124,10 +128,35 @@ perform until choice="Quit" or "quit"
                display "Search inventory for a key? (Y/N)"
                 accept choice
                 if choice="Y" or "y" then
-           call 'InventorySearch' using PlayerInventory,LeftRes1,LeftRes2,IsLocked,Indx,"Hallway Key",0
-                    move 0 to Indx
-                end-if 
-              end-if            
+           
+           perform Inventorylength
+
+           if ListLength =0 then
+              display "You have no items"
+           end-if
+
+           if ListLength not =0 then
+           perform CheckInventory
+           accept UseItemChoice
+           perform varying Indx from 1 by 1 until Indx>15
+           
+                if InventoryItemIndex(Indx) = UseItemChoice then
+                    if InventoryItem(Indx) = "Hallway Key" then                      
+                          move 0 to IsLocked
+                        exit perform
+                    end-if
+                    if InventoryItem(Indx) not = "Hallway Key"  then
+                    display "Wrong Item"
+                       exit perform
+                   end-if
+                            
+                end-if
+              end-perform
+           end-if
+                    move 0 to Indx 
+           end-if
+           end-if
+
           if IsLocked=0 then
                move "LeftRoom" to CurrentRoom
                move "Room1" to PreviousRoom
@@ -179,10 +208,12 @@ perform until choice="Quit" or "quit"
                        move "Key" to InventoryItemType(Indx)                      
                        exit perform     
                    end-if
-                   end-perform                                
+                   end-perform  
+           
+                                     
            end-if
            accept choice
-
+           
            if choice="Left" or "left" then
                move "LeftHallRoom" to CurrentRoom
                move "Hallway" to PreviousRoom
@@ -192,6 +223,11 @@ perform until choice="Quit" or "quit"
                move "RightHallRoom" to CurrentRoom
                move "Hallway" to PreviousRoom
            end-if
+
+             if choice="back" or "Back" then
+           move "Room1" to CurrentRoom
+           move "Hallway" to PreviousRoom
+       end-if
       
        end-if
 
@@ -211,15 +247,15 @@ perform until choice="Quit" or "quit"
                        move  "Heavy Clothes" to InventoryItem(Indx)
                        move "Armor" to InventoryItemType(Indx)
                        move 5 to InventoryItemDef(Indx)
+                       accept choice
                        exit perform     
                    end-if
                    end-perform
                 end-if	
-    
-              if choice="Back" or "back" then
-                move "Hallway" to CurrentRoom
-                move "LeftHallRoom" to PreviousRoom
-              end-if
+    if choice="back" or "Back" then
+           move "Hallway" to CurrentRoom
+           move "LeftHallRoom" to PreviousRoom
+       end-if
          end-if
 
        *>Inventory
@@ -230,14 +266,8 @@ perform until choice="Quit" or "quit"
            move 0 to Indx
            accept choice
        end-if
-       
-       *>BackInput
-       if choice="back" or "Back" then
-           move PreviousRoom to CurrentRoom
-           move CurrentRoom to PreviousRoom
-       end-if
 
-       *>Equip Weapon or Armor
+       *>Equip Item
        if choice="Equip" or "equip" then
            perform Equip
        end-if
@@ -251,6 +281,8 @@ end-perform
 
 stop run.
 
+
+*>Paragraphs Section
 CheckInventory section.
 
  display "Inventory:"
@@ -292,6 +324,18 @@ Equip section.
               end-perform
               move 0 to Indx
               exit section.
+
+Inventorylength section.
+
+           perform varying Indx from 1 by 1 until Indx>15
+               if InventoryItem(Indx) not = spaces then
+                   add 1 to ListLength
+               end-if
+           end-perform
+           move 0 to Indx
+           exit section.
+
+
 
 Stats section.
  display "Health: " Health

@@ -9,7 +9,11 @@ data division.
     linkage section.
       01 PlayerInventory.
        02 Inventory occurs 15 times.
-           03 InventoryItem pic x(99) value spaces. 
+           03 InventoryItemIndex pic 9(2) .
+           03 InventoryItem pic x(25) .   
+           03 InventoryItemType pic x(25). 
+           03 InventoryItemDef pic s9(3) value 0.
+           03 InventoryItemAttack pic s9(3) value 0.
 
        01 res1 pic x(99).
        01 res2 pic x(99).   
@@ -27,13 +31,10 @@ procedure division using PlayerInventory,res1,res2,IsLocked,Indx,Item,WS-Count.
      inspect Item tallying WS-Count for all InventoryItem(Indx) characters
        if WS-Count > 0 then
              if InventoryItem(Indx)="Hallway Key" then
-                            move 0 to IsLocked
-                            display res1
-                            exit perform
-                        else
-                            display res2
-                            exit perform
-                        end-if
+                 move 0 to IsLocked
+                 display res1
+              exit perform
+                                                  
         end-if               
         end-perform
    
