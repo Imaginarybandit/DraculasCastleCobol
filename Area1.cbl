@@ -14,6 +14,7 @@ fd Book1.
 
  01 Paragraph1 PIC X(99).
  01 Paragraph2 PIC X(99).
+ 01 Paragraph3 PIC X(99).
 working-storage section.
 01 choice pic x(99).
 01 NumberChoice pic 9(2).
@@ -27,6 +28,9 @@ working-storage section.
 01 StringLength pic 9(2) value 0.
 
 01  ModifiedString     PIC X(50).
+
+01 PuzzleInputT pic 9(9).
+01 PuzzleInputDir pic x(10).
 
  01 wsParagraphs.
            02 wsParagraph1 pic x(99).
@@ -95,7 +99,15 @@ working-storage section.
        02 LHIntro1 pic x(99) value "You have entered the room on the left.".
        02 LHIntro2 pic x(99) value "It appears to be a study, there are multiple tools trown about. On one corner there is an old chest".
        02 LHIntro3 pic x(99) value "On the other corner there is a collection of ancient books  on top of it.".
-       02 LHIntro4 pic x(99) value "Choose between (a) Open the chest (b) Read the books (c) Search Tools : ".
+       02 LHIntro4 pic x(99) value "Choose between (a) Open the chest (b) Read the books: ".
+
+01 RigthHallRoom.
+       02 RHIntro1 pic x(99) value "You try opening the door.".
+       02 RHIntro2 pic x(99) value "It has a bizarre handle that can be completely turn to the right or left".
+       02 RHIntro3 pic x(99) value "Choose how many times your going to turn the handle and to what direction: ".
+       02 RHIntro4 pic x(99) value "example. 3(times) R(right)".
+       02 RHIntro5 pic x(99) value "Write x/X to exit puzzle".
+       02 RHIntro6 pic x(99) value "You have entered the room on the right.".
 
 01 Body.
        02 Head pic x(99) value "Head".
@@ -247,7 +259,7 @@ perform until choice="Quit" or "quit"
       
        end-if
 
-       *>LeftHallRoom
+       *>LeftHallWayRoom
          if CurrentRoom="LeftHallRoom" then
               display LHIntro1
               display LHIntro2
@@ -278,6 +290,17 @@ perform until choice="Quit" or "quit"
            move "LeftHallRoom" to PreviousRoom
        end-if
          end-if
+
+
+       *>RightHallWayRoom
+       if CurrentRoom = "RightHallRoom"
+       display RHIntro1
+       display RHIntro2
+       display RHIntro3
+       display RHIntro4
+       display RHIntro5
+accept choice
+       end-if
 
        *>Inventory
        if choice = "I" OR  "i" then
@@ -372,11 +395,12 @@ Stats section.
 FillFile section.
 
        open extend Book1.
-         move "You have entered the castle. You are in a dimly lit," to Paragraph1
+         move "Date: 1 of august 1895" to Paragraph1
            write Paragraph1
-         move "expansive room with priceless antiques and artworks in a state of abandoned."  to Paragraph2          
+         move "He does not let me go. I have been tring to find means of escape for lord knows how many days."  to Paragraph2          
            write Paragraph2
-            
+         move "I have found a door that unlocks after turning the handle 2 times to the right and 1 times to the left." to Paragraph3
+           write Paragraph3
         end-write.
             	
 close Book1.
