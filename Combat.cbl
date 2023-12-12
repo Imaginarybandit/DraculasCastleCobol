@@ -18,13 +18,15 @@ file section.
            02 Weapon pic x(99).
            02 Armor pic x(99).
 
-       01 Minion.
-           02 MinHealth pic s9(3).
-           02 MinAttackPoints pic 9(3).
-           02 MinDefensePoints pic 9(3).
-           02 MinWeapon pic x(99).
-           02 MinArmor pic x(99).
-           02 MinIsStunned pic 9(1) value 0.
+       01 Enemy.
+           02 EnemyName pic x(99).
+           02 EnemyHealth pic s9(3).
+           02 EnemyAttackPoints pic 9(3).
+           02 EnemyDefensePoints pic 9(3).
+           02 EnemyWeapon pic x(99).
+           02 EnemyArmor pic x(99).
+           02 EnemyIsStunned pic 9(1) value 0. 
+           02 HasWeapon pic 9(1). 
          
        01 InitRandom pic s9v9(10).
        01 RandomNumber pic s9v9(10).
@@ -54,14 +56,14 @@ file section.
 
        01 YourTurn pic 9(1) value 1.          
      
-procedure division using Player,Minion,ws-current-date-data,RandomNumber,InitRandom,Body,BodyPick,InCombat,YourTurn.
+procedure division using Player,Enemy,ws-current-date-data,RandomNumber,InitRandom,Body,BodyPick,InCombat,YourTurn.
 
 
     
        move function current-date to ws-current-date-data
        compute InitRandom = function random (ws-current-millisecond)
 
-        display "You have entered combat"
+        display "You have entered combat against " EnemyName
        perform until InCombat equals 0
 
        
@@ -86,8 +88,8 @@ procedure division using Player,Minion,ws-current-date-data,RandomNumber,InitRan
               compute RandomNumber = function random ()
            if RandomNumber > 0.50
             display "Critical Hit!"
-            compute MinHealth = MinHealth - (AttackPoints * 2)
-            display "Enemy's Health is " MinHealth
+            compute EnemyHealth = EnemyHealth - (AttackPoints * 2)
+            display "Enemy's Health is " EnemyHealth
             move 0 to YourTurn
            else
             display "You have missed"
@@ -97,8 +99,8 @@ procedure division using Player,Minion,ws-current-date-data,RandomNumber,InitRan
        
          if BodyPick equals 2
                 display "You have attacked the torso"
-                compute MinHealth = MinHealth - AttackPoints 
-                display "Enemy's Health is " MinHealth
+                compute EnemyHealth = EnemyHealth - AttackPoints 
+                display "Enemy's Health is " EnemyHealth
                 move 0 to YourTurn
          end-if
        
@@ -106,12 +108,12 @@ procedure division using Player,Minion,ws-current-date-data,RandomNumber,InitRan
 
                 display "You have attacked the arms"
                 compute RandomNumber = function random ()
-               if RandomNumber > 0.35
+               if RandomNumber > 0.35 and HasWeapon equals 1
                display "Enemy has lost his weapon"
-               move "Fists" to MinWeapon
-               move 10 to  MinAttackPoints                
-                compute MinHealth = MinHealth - (AttackPoints * 0.35) 
-                display "Enemy's Health is " MinHealth
+               move "Fists" to EnemyWeapon
+               move 10 to  EnemyAttackPoints                
+                compute EnemyHealth = EnemyHealth - (AttackPoints * 0.35) 
+                display "Enemy's Health is " EnemyHealth
                 move 0 to YourTurn
               else
                 display "You have missed"
@@ -124,9 +126,9 @@ procedure division using Player,Minion,ws-current-date-data,RandomNumber,InitRan
                 compute RandomNumber = function random ()
                if RandomNumber > 0.10
                   display "Enemy is Stunned"            
-                compute MinHealth = MinHealth - (AttackPoints * 0.20)
-                display "Enemy's Health is " MinHealth
-                move 1 to MinIsStunned
+                compute EnemyHealth = EnemyHealth - (AttackPoints * 0.20)
+                display "Enemy's Health is " EnemyHealth
+                move 1 to EnemyIsStunned
                 move 0 to YourTurn 
               else
                 display "You have missed"
@@ -136,19 +138,19 @@ procedure division using Player,Minion,ws-current-date-data,RandomNumber,InitRan
          end-if
        
        if YourTurn equals 0
-           if MinHealth <= 0
+           if EnemyHealth <= 0
                 display "You have won"
                 move 0 to InCombat
                 exit perform
             end-if
-            if MinIsStunned equals 1
+            if EnemyIsStunned equals 1
                display "Enemy is stunned"
-               move 0 to MinIsStunned
+               move 0 to EnemyIsStunned
                move 1 to YourTurn
             else
                display "Enemy's Turn"
-               compute Health = Health - MinAttackPoints
-               display "Enenmy has attacked you, He did " MinAttackPoints " damage"
+               compute Health = (Health + DefensePoints) - EnemyAttackPoints
+               display "Enenmy has attacked you, He did " EnemyAttackPoints " damage"
                move 1 to YourTurn 
             end-if
          end-if
@@ -156,6 +158,7 @@ procedure division using Player,Minion,ws-current-date-data,RandomNumber,InitRan
          end-if
        
        end-perform
-      
+      move 0 to InCombat
+       
 exit program.
 

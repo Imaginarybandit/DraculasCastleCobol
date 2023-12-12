@@ -32,6 +32,8 @@ working-storage section.
 01 PuzzleInputT pic 9(9).
 01 PuzzleInputDir pic x(10).
 
+01 Solved pic 9(1) value 0. 
+
  01 wsParagraphs.
            02 wsParagraph1 pic x(99).
            02 wsParagraph2 pic x(99). 
@@ -46,26 +48,26 @@ working-storage section.
        02 DefensePoints pic 9(3) value 0.
        02 Weapon pic x(99) value "Fists".
        02 Armor pic x(99) value "Clothes".
-       
-
-01 Minion.
-       02 MinHealth pic s9(3) value 20.
-       02 MinAttackPoints pic 9(3) value 15.
-       02 MinDefensePoints pic 9(3) value 0.
-       02 MinWeapon pic x(99) value "Wooden Cudgel".
-       02 MinArmor pic x(99) value "Clothes".
-       02 MinIsStunned pic 9(1) value 0.
          
-       
+01 Enemy.
+       02 EnemyName pic x(99).
+       02 EnemyHealth pic s9(3).
+       02 EnemyAttackPoints pic 9(3).
+       02 EnemyDefensePoints pic 9(3).
+       02 EnemyWeapon pic x(99).
+       02 EnemyArmor pic x(99).
+       02 EnemyIsStunned pic 9(1) value 0.
+       02 HasWeapon pic 9(1) value 0.     
        
 01 PlayerInventory.
        02 Inventory occurs 15 times.
        03 InventoryItemIndex pic 9(2) .
-           03 InventoryItem pic x(25) .   
-           03 InventoryItemType pic x(25). 
-           03 InventoryItemDef pic s9(3) value 0.
-           03 InventoryItemAttack pic s9(3) value 0.      
-
+       03 InventoryItem pic x(25) .   
+       03 InventoryItemType pic x(25). 
+       03 InventoryItemDef pic s9(3) value 0.
+       03 InventoryItemAttack pic s9(3) value 0. 
+       03 InventoryItemHealPoints pic s9(3) value 0.
+      
 01 EquipChoice pic 9(2).
 
 01 UseItemChoice pic 9(2).
@@ -84,7 +86,10 @@ working-storage section.
        02 LeftIntro3 pic x(99) value "He hasn't notice you.".
        02 LeftIntro4 pic x(99) value "Choose between (1) sneaking around (2) attack: ".
        02 LeftRes1 pic x(99) value "You have Unlocked the door".
-         02 LeftRes2 pic x(99) value "You do not have the key".
+       02 LeftRes2 pic x(99) value "You do not have the key".
+       02 LeftIntro5 pic x(99) value "At the end of the room you see some medicinal balms".
+       02 LeftIntro6 pic x(99) value "Choose between Take the balms(Y/N): ".
+
        02 IsLocked pic 9(1) value 1.
 
 01 Hallway.
@@ -108,6 +113,8 @@ working-storage section.
        02 RHIntro4 pic x(99) value "example. 3(times) R(right)".
        02 RHIntro5 pic x(99) value "Write x/X to exit puzzle".
        02 RHIntro6 pic x(99) value "You have entered the room on the right.".
+
+       02 RHIntro7 pic x(99) value " There is a group of viciuos giant bats in the room.".
 
 01 Body.
        02 Head pic x(99) value "Head".
@@ -134,6 +141,7 @@ working-storage section.
        02 ws-diff-from-gmt pic s9(4).   
 
 procedure division.
+
 perform until choice="Quit" or "quit"    
        
        *>Room1
@@ -197,17 +205,44 @@ perform until choice="Quit" or "quit"
            display LeftIntro2
            display LeftIntro3
            display LeftIntro4
+          
+                move "Minion" to EnemyName
+                move 20 to EnemyHealth
+                move 15 to EnemyAttackPoints
+                move 0 to EnemyDefensePoints
+                move "Wooden Cudgel" to EnemyWeapon
+                move "Clothes" to EnemyArmor
+                move 1 to HasWeapon
+               
            accept NumberChoice
               if NumberChoice=1 then
                 display "You have been spotted"
-                 call "Combat" using Player,Minion,ws-current-date-data,RandomNumber,InitRandom,Body,BodyPick,InCombat,YourTurn
+
+                 call "Combat" using Player,Enemy,ws-current-date-data,RandomNumber,InitRandom,Body,BodyPick,InCombat,YourTurn
               end-if
               if NumberChoice=2 then
                 display "You have attacked the person you did some damage but he is still conscious"
-                compute MinHealth = MinHealth - AttackPoints
-                 call "Combat" using Player,Minion,ws-current-date-data,RandomNumber,InitRandom,Body,BodyPick,InCombat,YourTurn
+                compute EnemyHealth = EnemyHealth - AttackPoints
+                 call "Combat" using Player,Enemy,ws-current-date-data,RandomNumber,InitRandom,Body,BodyPick,InCombat,YourTurn
               end-if
+           display LeftIntro5
+           display LeftIntro6
+           accept choice
 
+           if choice="Y" or "y" then
+              perform varying Indx from 1 by 1 until Indx>15
+                      if InventoryItem(Indx) = spaces then
+                          move Indx to InventoryItemIndex(Indx)
+                          move  "Medicinal Balms" to InventoryItem(Indx)
+                          move "Healing" to InventoryItemType(Indx)
+                          move 0 to InventoryItemDef(Indx)
+                          move 0 to InventoryItemAttack(Indx)
+                          move 10 to InventoryItemHealPoints(Indx)
+                          accept choice
+                          exit perform     
+                     end-if
+                     end-perform
+              end-if
 
            if choice="Back" or "back" then
                move "Room1" to CurrentRoom
@@ -299,7 +334,42 @@ perform until choice="Quit" or "quit"
        display RHIntro3
        display RHIntro4
        display RHIntro5
-accept choice
+
+         if Solved=0 then
+      perform until Solved=1
+
+       display " Write how many times you are going to turn the handle: "
+           accept PuzzleInputT
+       display " Write the direction of the handle: "	
+           accept PuzzleInputDir          
+
+       if PuzzleInputT = 2 and PuzzleInputDir = "r" then
+       display "You have unlocked the door"
+       move 1 to Solved
+     
+       else
+         display "You have failed to unlock the door"
+         exit perform
+         
+      end-perform
+       end-if
+
+         if Solved=1 then
+         display RHIntro6
+         display RHIntro7
+
+                move "Giant Bat" to EnemyName
+                move 30 to EnemyHealth
+                move 15 to EnemyAttackPoints
+                move 0 to EnemyDefensePoints
+                move "Claws" to EnemyWeapon
+                move "Skin" to EnemyArmor
+                move 0 to HasWeapon
+
+         call "Combat" using Player,Enemy,ws-current-date-data,RandomNumber,InitRandom,Body,BodyPick,InCombat,YourTurn
+         end-if
+       accept choice
+
        end-if
 
        *>Inventory
@@ -361,6 +431,12 @@ Equip section.
                         display "You have equipped " InventoryItem(Indx)
                         exit perform
                     end-if
+                    if InventoryItemType(Indx) = "Healing" then  
+
+                        add 10 to Health
+                        display "You have healed yourself"
+                        exit perform
+                    end-if
                     if InventoryItemType(Indx) not = "Weapon" or "Armor" then
                         display "You cannot equip this item"
                         exit perform
@@ -399,7 +475,7 @@ FillFile section.
            write Paragraph1
          move "He does not let me go. I have been tring to find means of escape for lord knows how many days."  to Paragraph2          
            write Paragraph2
-         move "I have found a door that unlocks after turning the handle 2 times to the right and 1 times to the left." to Paragraph3
+         move "I have found a door that unlocks after turning the handle 2 times to the right" to Paragraph3
            write Paragraph3
         end-write.
             	
