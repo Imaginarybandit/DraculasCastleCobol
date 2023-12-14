@@ -52,9 +52,10 @@ file section.
 
        01 BodyPick pic 9(1).
 
-       01 InCombat pic 9(1) value 1.
+       01 InCombat pic 9(1).
 
-       01 YourTurn pic 9(1) value 1.          
+       01 YourTurn pic 9(1) value 1.  
+      
      
 procedure division using Player,Enemy,ws-current-date-data,RandomNumber,InitRandom,Body,BodyPick,InCombat,YourTurn.
 
@@ -62,16 +63,17 @@ procedure division using Player,Enemy,ws-current-date-data,RandomNumber,InitRand
     
        move function current-date to ws-current-date-data
        compute InitRandom = function random (ws-current-millisecond)
-
+display InCombat
         display "You have entered combat against " EnemyName
+   
        perform until InCombat equals 0
-
        
       if YourTurn equals 1
 
        if Health <= 0
            display "You have died"
            move 0 to InCombat
+           stop run
            exit perform 
        end-if
        display "Your Health is " Health
@@ -158,7 +160,8 @@ procedure division using Player,Enemy,ws-current-date-data,RandomNumber,InitRand
          end-if
        
        end-perform
-      move 0 to InCombat
-       
+         
+       move 1 to YourTurn
+       move 0 to InCombat
 exit program.
 

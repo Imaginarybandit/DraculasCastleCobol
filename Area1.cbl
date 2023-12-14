@@ -38,6 +38,7 @@ working-storage section.
            02 wsParagraph1 pic x(99).
            02 wsParagraph2 pic x(99). 
 
+01 MaxHealth pic 9(3).
 
 01 Player.
        02 CurrentRoom pic x(99) value "Room1".
@@ -89,7 +90,8 @@ working-storage section.
        02 LeftRes2 pic x(99) value "You do not have the key".
        02 LeftIntro5 pic x(99) value "At the end of the room you see some medicinal balms".
        02 LeftIntro6 pic x(99) value "Choose between Take the balms(Y/N): ".
-
+       02 LeftRoomCombat pic 9(1) value 0.
+       02 BalmPicked pic 9(1) value 0.
        02 IsLocked pic 9(1) value 1.
 
 01 Hallway.
@@ -105,6 +107,8 @@ working-storage section.
        02 LHIntro2 pic x(99) value "It appears to be a study, there are multiple tools trown about. On one corner there is an old chest".
        02 LHIntro3 pic x(99) value "On the other corner there is a collection of ancient books  on top of it.".
        02 LHIntro4 pic x(99) value "Choose between (a) Open the chest (b) Read the books: ".
+       02 LHChestSearched pic 9(1) value 0.
+       02 LHBookSearched pic 9(1) value 0.
 
 01 RigthHallRoom.
        02 RHIntro1 pic x(99) value "You try opening the door.".
@@ -113,8 +117,11 @@ working-storage section.
        02 RHIntro4 pic x(99) value "example. 3(times) R(right)".
        02 RHIntro5 pic x(99) value "Write x/X to exit puzzle".
        02 RHIntro6 pic x(99) value "You have entered the room on the right.".
-
        02 RHIntro7 pic x(99) value " There is a group of viciuos giant bats in the room.".
+       02 RHIntro8 pic x(99) value "A well maintained mace is hanging in the wall.".
+       02 RHIntro9 pic x(99) value "Pick it up? (Y/N)".
+
+       02 RHSearched pic 9(1) value 0.
 
 01 Body.
        02 Head pic x(99) value "Head".
@@ -141,9 +148,11 @@ working-storage section.
        02 ws-diff-from-gmt pic s9(4).   
 
 procedure division.
-
+perform ClearFile
 perform until choice="Quit" or "quit"    
        
+       move Health to MaxHealth
+
        *>Room1
        if CurrentRoom="Room1" then        
        display Intro1
@@ -202,6 +211,8 @@ perform until choice="Quit" or "quit"
 
        *>LeftRoom
        if CurrentRoom="LeftRoom" then
+
+       if LeftRoomCombat=0 then
            display LeftIntro2
            display LeftIntro3
            display LeftIntro4
@@ -219,12 +230,39 @@ perform until choice="Quit" or "quit"
                 display "You have been spotted"
 
                  call "Combat" using Player,Enemy,ws-current-date-data,RandomNumber,InitRandom,Body,BodyPick,InCombat,YourTurn
+                 perform GameOver
+                 move 1 to LeftRoomCombat
               end-if
               if NumberChoice=2 then
                 display "You have attacked the person you did some damage but he is still conscious"
                 compute EnemyHealth = EnemyHealth - AttackPoints
+              
                  call "Combat" using Player,Enemy,ws-current-date-data,RandomNumber,InitRandom,Body,BodyPick,InCombat,YourTurn
+                 perform GameOver
+                 move 1 to LeftRoomCombat
+               
               end-if
+              
+              display "He has dropped his weapon: " EnemyWeapon
+              display "Pick it up? (Y/N)"
+                accept choice
+                if choice="Y" or "y" then
+                    perform varying Indx from 1 by 1 until Indx>15
+                        if InventoryItem(Indx) = spaces then
+                            move Indx to InventoryItemIndex(Indx)
+                            move  EnemyWeapon to InventoryItem(Indx)
+                            move "Weapon" to InventoryItemType(Indx)
+                            move 0 to InventoryItemDef(Indx)
+                            move 5 to InventoryItemAttack(Indx)
+                            move 0 to InventoryItemHealPoints(Indx)
+                            exit perform     
+                         end-if
+                         end-perform
+                     display "You have picked up: " EnemyWeapon
+                end-if
+           end-if
+
+           if BalmPicked=0 then
            display LeftIntro5
            display LeftIntro6
            accept choice
@@ -238,12 +276,22 @@ perform until choice="Quit" or "quit"
                           move 0 to InventoryItemDef(Indx)
                           move 0 to InventoryItemAttack(Indx)
                           move 10 to InventoryItemHealPoints(Indx)
+                           display "You have picked up: " InventoryItem(Indx)
+                           display "Pick where to go: "
                           accept choice
                           exit perform     
                      end-if
-                     end-perform
+                     end-perform 
+                     move 1 to BalmPicked         
+              else
+                display "Pick where to go: "
+                accept choice
               end-if
-
+           else
+              display "This room is empty"
+              display "Pick where to go: "
+              accept  choice
+           end-if
            if choice="Back" or "back" then
                move "Room1" to CurrentRoom
                move "LeftRoom" to PreviousRoom
@@ -272,10 +320,14 @@ perform until choice="Quit" or "quit"
                        exit perform     
                    end-if
                    end-perform  
-           
+            display "Pick where to go (left,right): "
+                accept choice
                                      
+           else
+                display "Pick where to go (left,right): "
+                accept choice
            end-if
-           accept choice
+          
            
            if choice="Left" or "left" then
                move "LeftHallRoom" to CurrentRoom
@@ -303,23 +355,38 @@ perform until choice="Quit" or "quit"
               accept choice
 
                 if choice="a" or "A" then
+                if LHChestSearched=0 then
                     display "You have found Heavy Clothes"              
                     perform varying Indx from 1 by 1 until Indx>15
                     if InventoryItem(Indx) = spaces then
                        move Indx to InventoryItemIndex(Indx)
                        move  "Heavy Clothes" to InventoryItem(Indx)
                        move "Armor" to InventoryItemType(Indx)
-                       move 5 to InventoryItemDef(Indx)
-                       accept choice
-                       exit perform     
+                       move 5 to InventoryItemDef(Indx)                                        
+                       exit perform   
                    end-if
                    end-perform
-
+                   move 1 to LHChestSearched
+                   else
+                     display "You have already searched the chest"
+                     display "Pick where to go (back) or what to do: "
+                     accept choice
+                     end-if
                 end-if	
                 if choice = "b" or "B" then
+                if LHBookSearched=0 then
                    perform FillFile 
                    display "You have found a book"
-                   end-if
+                  
+                     move 1 to LHBookSearched
+                     else
+                        display "You have already searched the books"
+                        display "Pick where to go (back) or what to do: "
+                        accept choice
+                        end-if
+
+                      
+                end-if
     if choice="back" or "Back" then
            move "Hallway" to CurrentRoom
            move "LeftHallRoom" to PreviousRoom
@@ -349,6 +416,7 @@ perform until choice="Quit" or "quit"
      
        else
          display "You have failed to unlock the door"
+         accept choice
          exit perform
          
       end-perform
@@ -365,11 +433,30 @@ perform until choice="Quit" or "quit"
                 move "Claws" to EnemyWeapon
                 move "Skin" to EnemyArmor
                 move 0 to HasWeapon
-
+       move 1 to InCombat
          call "Combat" using Player,Enemy,ws-current-date-data,RandomNumber,InitRandom,Body,BodyPick,InCombat,YourTurn
+         perform GameOver
          end-if
+       display RHIntro8   
+       display RHIntro9
+         
        accept choice
-
+         if choice="Y" or "y" then
+                perform varying Indx from 1 by 1 until Indx>15
+                        if InventoryItem(Indx) = spaces then
+                            move Indx to InventoryItemIndex(Indx)
+                            move  "Mace" to InventoryItem(Indx)
+                            move "Weapon" to InventoryItemType(Indx)
+                            move 0 to InventoryItemDef(Indx)
+                            move 10 to InventoryItemAttack(Indx)
+                            move 0 to InventoryItemHealPoints(Indx)                           
+                            exit perform     
+                         end-if
+                end-perform
+                display "You have picked up: " InventoryItem(Indx)
+                display "Pick where to go (back): "
+                accept choice
+                end-if
        end-if
 
        *>Inventory
@@ -421,7 +508,7 @@ Equip section.
                 if InventoryItemIndex(Indx) = EquipChoice then
                     if InventoryItemType(Indx) = "Weapon" then
                         move InventoryItem(Indx) to Weapon
-                        move InventoryItemAttack(Indx) to AttackPoints
+                        compute AttackPoints = AttackPoints + InventoryItemAttack(Indx)
                         display "You have equipped " InventoryItem(Indx)
                         exit perform
                     end-if
@@ -432,8 +519,10 @@ Equip section.
                         exit perform
                     end-if
                     if InventoryItemType(Indx) = "Healing" then  
-
                         add 10 to Health
+                        if Health > MaxHealth then
+                            move MaxHealth to Health
+                        end-if
                         display "You have healed yourself"
                         exit perform
                     end-if
@@ -493,5 +582,11 @@ ClearFile section.
 
 close Book1.
 
+GameOver section.
+    if Health <= 0 then       
+   move "Quit" to choice          
+        
+    end-if
+  exit section.   
 
 
