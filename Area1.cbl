@@ -121,6 +121,8 @@ working-storage section.
        02 RHIntro8 pic x(99) value "A well maintained mace is hanging in the wall.".
        02 RHIntro9 pic x(99) value "Pick it up? (Y/N)".
 
+       02 RHCombat pic 9(1) value 0.
+
        02 RHSearched pic 9(1) value 0.
 
 01 Body.
@@ -403,7 +405,7 @@ perform until choice="Quit" or "quit"
        display RHIntro5
 
          if Solved=0 then
-      perform until Solved=1
+      perform until Solved=1 
 
        display " Write how many times you are going to turn the handle: "
            accept PuzzleInputT
@@ -413,17 +415,25 @@ perform until choice="Quit" or "quit"
        if PuzzleInputT = 2 and PuzzleInputDir = "r" then
        display "You have unlocked the door"
        move 1 to Solved
-     
+      exit perform
        else
          display "You have failed to unlock the door"
+            display "Write x/X to exit puzzle or press any key to try again:"
          accept choice
+        if choice="x" or "X" then
+        display "You have exited the puzzle"
+        move PreviousRoom to CurrentRoom
+
          exit perform
-         
+        end-if
       end-perform
        end-if
 
          if Solved=1 then
+
+
          display RHIntro6
+         if RHCombat=0 then
          display RHIntro7
 
                 move "Giant Bat" to EnemyName
@@ -436,7 +446,11 @@ perform until choice="Quit" or "quit"
        move 1 to InCombat
          call "Combat" using Player,Enemy,ws-current-date-data,RandomNumber,InitRandom,Body,BodyPick,InCombat,YourTurn
          perform GameOver
-         end-if
+            move 1 to RHCombat
+     
+        end-if 
+
+        if RHSearched=0 then
        display RHIntro8   
        display RHIntro9
          
@@ -457,8 +471,9 @@ perform until choice="Quit" or "quit"
                 display "Pick where to go (back): "
                 accept choice
                 end-if
+                end-if
        end-if
-
+end-if
        *>Inventory
        if choice = "I" OR  "i" then
        
