@@ -27,6 +27,7 @@ file section.
            02 EnemyArmor pic x(99).
            02 EnemyIsStunned pic 9(1) value 0. 
            02 HasWeapon pic 9(1). 
+           02 StunResist pic 9(1).  
          
        01 InitRandom pic s9v9(10).
        01 RandomNumber pic s9v9(10).
@@ -63,7 +64,7 @@ procedure division using Player,Enemy,ws-current-date-data,RandomNumber,InitRand
     
        move function current-date to ws-current-date-data
        compute InitRandom = function random (ws-current-millisecond)
-display InCombat
+
         display "You have entered combat against " EnemyName
    
        perform until InCombat equals 0
@@ -126,11 +127,17 @@ display InCombat
          if BodyPick equals 4
                 display "You have attacked the legs"
                 compute RandomNumber = function random ()
-               if RandomNumber > 0.10
-                  display "Enemy is Stunned"            
+               if RandomNumber > 0.10          
                 compute EnemyHealth = EnemyHealth - (AttackPoints * 0.20)
                 display "Enemy's Health is " EnemyHealth
-                move 1 to EnemyIsStunned
+                if StunResist equals 1
+                  display "Enemy has resisted the stun"
+                  move 0 to EnemyIsStunned
+                  move 0 to StunResist
+                else
+                    display "Enemy has been stunned"
+                  move 1 to EnemyIsStunned
+                end-if               
                 move 0 to YourTurn 
               else
                 display "You have missed"

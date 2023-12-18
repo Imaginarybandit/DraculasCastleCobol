@@ -39,6 +39,8 @@ working-storage section.
            02 wsParagraph2 pic x(99). 
 
 01 MaxHealth pic 9(3).
+01 BaseAttack pic 9(3).
+01 BaseDefense pic 9(3).
 
 01 Player.
        02 CurrentRoom pic x(99) value "Room1".
@@ -58,7 +60,8 @@ working-storage section.
        02 EnemyWeapon pic x(99).
        02 EnemyArmor pic x(99).
        02 EnemyIsStunned pic 9(1) value 0.
-       02 HasWeapon pic 9(1) value 0.     
+       02 HasWeapon pic 9(1) value 0. 
+       02 StunResist pic 9(1) value 0.    
        
 01 PlayerInventory.
        02 Inventory occurs 15 times.
@@ -97,7 +100,8 @@ working-storage section.
 01 Hallway.
        02 HIntro1 pic x(99) value "You have entered the hallway.".
        02 HIntro2 pic x(99) value "It is lined with portraits of royalty raging from centuries old to decades.".
-       02 HIntro3 pic x(99) value "At each end of the hallway are doors. You can go to the door on the left or the door on the right.".
+       02 HIntro3 pic x(99) value "At each end of the hallway are doors.".
+       02 HInrot3_5 pic x(99) value "You can go to the door on the left,the door on the right or an big ornate door to the front.".
        02 HIntro4 pic x(99) value "One of the paintings appears to be slightly crooked.".
        02 HIntro5 pic x(99) value "Investigate the painting? (Y/N)".
        02 paintingSearch pic 9(1) value 0.
@@ -125,6 +129,14 @@ working-storage section.
 
        02 RHSearched pic 9(1) value 0.
 
+
+01 FrontHallRoom.
+       
+       02 FHIntro1 pic x(99) value "You have opened the heavy doors.".
+       02 FHIntro2 pic x(99) value "There is a pack of vicious wolves in front of you".
+       02 FHIntro3 pic x(99) value "You try to attack but they are too fast".
+
+
 01 Body.
        02 Head pic x(99) value "Head".
        02 Torso pic x(99) value "Torso".
@@ -151,9 +163,12 @@ working-storage section.
 
 procedure division.
 perform ClearFile
+move Health to MaxHealth
+move AttackPoints to BaseAttack
+move DefensePoints to BaseDefense
 perform until choice="Quit" or "quit"    
        
-       move Health to MaxHealth
+       
 
        *>Room1
        if CurrentRoom="Room1" then        
@@ -306,6 +321,7 @@ perform until choice="Quit" or "quit"
            display HIntro1
            display HIntro2
            display HIntro3
+           display HInrot3_5
            display HIntro4
            if paintingSearch=0 then
                display HIntro5
@@ -341,6 +357,11 @@ perform until choice="Quit" or "quit"
                move "Hallway" to PreviousRoom
            end-if
 
+           if choice="Front" or "front" then
+               move "FrontHallRoom" to CurrentRoom
+               move "Hallway" to PreviousRoom
+           end-if
+
              if choice="back" or "Back" then
            move "Room1" to CurrentRoom
            move "Hallway" to PreviousRoom
@@ -362,13 +383,14 @@ perform until choice="Quit" or "quit"
                     perform varying Indx from 1 by 1 until Indx>15
                     if InventoryItem(Indx) = spaces then
                        move Indx to InventoryItemIndex(Indx)
-                       move  "Heavy Clothes" to InventoryItem(Indx)
+                       move  "Rusted Mail" to InventoryItem(Indx)
                        move "Armor" to InventoryItemType(Indx)
-                       move 5 to InventoryItemDef(Indx)                                        
+                       move 10 to InventoryItemDef(Indx)                                        
                        exit perform   
                    end-if
                    end-perform
                    move 1 to LHChestSearched
+                  
                    else
                      display "You have already searched the chest"
                      display "Pick where to go (back) or what to do: "
@@ -380,14 +402,12 @@ perform until choice="Quit" or "quit"
                    perform FillFile 
                    display "You have found a book"
                   
-                     move 1 to LHBookSearched
+                     
                      else
                         display "You have already searched the books"
                         display "Pick where to go (back) or what to do: "
                         accept choice
-                        end-if
-
-                      
+                        end-if      
                 end-if
     if choice="back" or "Back" then
            move "Hallway" to CurrentRoom
@@ -398,13 +418,13 @@ perform until choice="Quit" or "quit"
 
        *>RightHallWayRoom
        if CurrentRoom = "RightHallRoom"
-       display RHIntro1
-       display RHIntro2
-       display RHIntro3
-       display RHIntro4
-       display RHIntro5
 
          if Solved=0 then
+       display RHIntro1
+       display RHIntro2
+       display RHIntro3 
+       display RHIntro4
+       display RHIntro5
       perform until Solved=1 
 
        display " Write how many times you are going to turn the handle: "
@@ -443,7 +463,7 @@ perform until choice="Quit" or "quit"
                 move "Claws" to EnemyWeapon
                 move "Skin" to EnemyArmor
                 move 0 to HasWeapon
-       move 1 to InCombat
+   
          call "Combat" using Player,Enemy,ws-current-date-data,RandomNumber,InitRandom,Body,BodyPick,InCombat,YourTurn
          perform GameOver
             move 1 to RHCombat
@@ -467,13 +487,55 @@ perform until choice="Quit" or "quit"
                             exit perform     
                          end-if
                 end-perform
+                move 1 to RHSearched
                 display "You have picked up: " InventoryItem(Indx)
                 display "Pick where to go (back): "
                 accept choice
                 end-if
-                end-if
+         else
+            display "This room is empty"
+            display "Pick where to go (back): "
+            accept choice
+         end-if
+
+            
        end-if
-end-if
+       
+         if choice="back" or "Back" then
+              move "Hallway" to CurrentRoom
+              move "RightHallRoom" to PreviousRoom
+         end-if
+         
+       end-if
+
+
+      *>FrontHallWayRoom
+       if CurrentRoom="FrontHallRoom" then
+           display FHIntro1
+           display FHIntro2
+           display FHIntro3
+
+                move "Pack of Wolves" to EnemyName
+                move 40 to EnemyHealth
+                move 20 to EnemyAttackPoints
+                move 5 to EnemyDefensePoints
+                move "Claws" to EnemyWeapon
+                move "Skin" to EnemyArmor
+                move 0 to HasWeapon
+                move 1 to StunResist
+           compute Health = Health - 15
+              display "You have lost 15 health"
+
+            call "Combat" using Player,Enemy,ws-current-date-data,RandomNumber,InitRandom,Body,BodyPick,InCombat,YourTurn
+           display "Pick where to go (back): "
+           accept choice
+           if choice="back" or "Back" then
+               move "Hallway" to CurrentRoom
+               move "FrontHallRoom" to PreviousRoom
+           end-if
+       end-if
+
+
        *>Inventory
        if choice = "I" OR  "i" then
        
@@ -523,13 +585,13 @@ Equip section.
                 if InventoryItemIndex(Indx) = EquipChoice then
                     if InventoryItemType(Indx) = "Weapon" then
                         move InventoryItem(Indx) to Weapon
-                        compute AttackPoints = AttackPoints + InventoryItemAttack(Indx)
+                        compute AttackPoints = BaseAttack + InventoryItemAttack(Indx)
                         display "You have equipped " InventoryItem(Indx)
                         exit perform
                     end-if
                     if InventoryItemType(Indx) = "Armor" then
                         move InventoryItem(Indx) to Armor
-                        move InventoryItemDef(Indx) to DefensePoints
+                        compute DefensePoints = BaseDefense + InventoryItemDef(Indx)
                         display "You have equipped " InventoryItem(Indx)
                         exit perform
                     end-if
