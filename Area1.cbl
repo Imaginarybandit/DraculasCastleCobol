@@ -178,12 +178,14 @@ perform until choice="Quit" or "quit"
        display Intro4
        move "Room1" to CurrentRoom
        accept choice
+       call 'system' using 'clear'
            if choice="Front" or "front" then
            move "Hallway" to CurrentRoom
            move "Room1" to PreviousRoom
            end-if
 
            if choice="Left" or "left" then
+           call 'system' using 'clear'
            if IsLocked=1 then
                display LeftIntro1
                display "Search inventory for a key? (Y/N)"
@@ -312,6 +314,7 @@ perform until choice="Quit" or "quit"
            if choice="Back" or "back" then
                move "Room1" to CurrentRoom
                move "LeftRoom" to PreviousRoom
+               call 'system' using 'clear'
            end-if
        end-if
 
@@ -338,11 +341,11 @@ perform until choice="Quit" or "quit"
                        exit perform     
                    end-if
                    end-perform  
-            display "Pick where to go (left,right): "
+            display "Pick where to go (left,right,front): "
                 accept choice
                                      
            else
-                display "Pick where to go (left,right): "
+                display "Pick where to go (left,right,front): "
                 accept choice
            end-if
           
@@ -463,7 +466,7 @@ perform until choice="Quit" or "quit"
                 move "Claws" to EnemyWeapon
                 move "Skin" to EnemyArmor
                 move 0 to HasWeapon
-   
+                move 1 to InCombat
          call "Combat" using Player,Enemy,ws-current-date-data,RandomNumber,InitRandom,Body,BodyPick,InCombat,YourTurn
          perform GameOver
             move 1 to RHCombat
@@ -517,17 +520,19 @@ perform until choice="Quit" or "quit"
 
                 move "Pack of Wolves" to EnemyName
                 move 40 to EnemyHealth
-                move 20 to EnemyAttackPoints
-                move 5 to EnemyDefensePoints
+                move 15 to EnemyAttackPoints
+                move 0 to EnemyDefensePoints
                 move "Claws" to EnemyWeapon
                 move "Skin" to EnemyArmor
                 move 0 to HasWeapon
                 move 1 to StunResist
-           compute Health = Health - 15
-              display "You have lost 15 health"
-
+               compute Health = Health - 10
+               display "You have lost 15 health"
+               move 1 to InCombat
             call "Combat" using Player,Enemy,ws-current-date-data,RandomNumber,InitRandom,Body,BodyPick,InCombat,YourTurn
-           display "Pick where to go (back): "
+           display "You move to the next level"
+           display "Thank you for playing"
+           move "Quit" to choice   
            accept choice
            if choice="back" or "Back" then
                move "Hallway" to CurrentRoom
