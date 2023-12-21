@@ -351,24 +351,28 @@ perform until choice="Quit" or "quit"
           
            
            if choice="Left" or "left" then
+               call 'system' using 'clear'
                move "LeftHallRoom" to CurrentRoom
                move "Hallway" to PreviousRoom
            end-if
 
            if choice="Right" or "right" then
+               call 'system' using 'clear'
                move "RightHallRoom" to CurrentRoom
                move "Hallway" to PreviousRoom
            end-if
 
            if choice="Front" or "front" then
+               call 'system' using 'clear'
                move "FrontHallRoom" to CurrentRoom
                move "Hallway" to PreviousRoom
            end-if
 
-             if choice="back" or "Back" then
-           move "Room1" to CurrentRoom
-           move "Hallway" to PreviousRoom
-       end-if
+           if choice="back" or "Back" then
+               call 'system' using 'clear'
+               move "Room1" to CurrentRoom
+               move "Hallway" to PreviousRoom
+           end-if
       
        end-if
 
@@ -382,7 +386,10 @@ perform until choice="Quit" or "quit"
 
                 if choice="a" or "A" then
                 if LHChestSearched=0 then
-                    display "You have found Heavy Clothes"              
+                    call 'system' using 'clear'
+                    display ""
+                    display "You have found a Rusted Mail" 
+                    display ""             
                     perform varying Indx from 1 by 1 until Indx>15
                     if InventoryItem(Indx) = spaces then
                        move Indx to InventoryItemIndex(Indx)
@@ -403,9 +410,11 @@ perform until choice="Quit" or "quit"
                 if choice = "b" or "B" then
                 if LHBookSearched=0 then
                    perform FillFile 
+                   move 1 to LHBookSearched
+                   call 'system' using 'clear'
+                   display ""   
                    display "You have found a book"
-                  
-                     
+                   display ""                       
                      else
                         display "You have already searched the books"
                         display "Pick where to go (back) or what to do: "
@@ -413,6 +422,7 @@ perform until choice="Quit" or "quit"
                         end-if      
                 end-if
     if choice="back" or "Back" then
+           call 'system' using 'clear'
            move "Hallway" to CurrentRoom
            move "LeftHallRoom" to PreviousRoom
        end-if
@@ -491,7 +501,9 @@ perform until choice="Quit" or "quit"
                          end-if
                 end-perform
                 move 1 to RHSearched
+                display ""   
                 display "You have picked up: " InventoryItem(Indx)
+                display ""   
                 display "Pick where to go (back): "
                 accept choice
                 end-if
@@ -505,6 +517,7 @@ perform until choice="Quit" or "quit"
        end-if
        
          if choice="back" or "Back" then
+              call 'system' using 'clear'
               move "Hallway" to CurrentRoom
               move "RightHallRoom" to PreviousRoom
          end-if
@@ -532,7 +545,7 @@ perform until choice="Quit" or "quit"
             call "Combat" using Player,Enemy,ws-current-date-data,RandomNumber,InitRandom,Body,BodyPick,InCombat,YourTurn
            display "You move to the next level"
            display "Thank you for playing"
-           move "Quit" to choice   
+           stop run   
            accept choice
            if choice="back" or "Back" then
                move "Hallway" to CurrentRoom

@@ -135,7 +135,7 @@ procedure division using Player,Enemy,ws-current-date-data,RandomNumber,InitRand
                   move 0 to EnemyIsStunned
                   move 0 to StunResist
                 else
-                    display "Enemy has been stunned"
+                  display "Enemy has been stunned"
                   move 1 to EnemyIsStunned
                 end-if               
                 move 0 to YourTurn 
@@ -153,7 +153,6 @@ procedure division using Player,Enemy,ws-current-date-data,RandomNumber,InitRand
                 exit perform
             end-if
             if EnemyIsStunned equals 1
-               display "Enemy is stunned"
                move 0 to EnemyIsStunned
                move 1 to YourTurn
             else

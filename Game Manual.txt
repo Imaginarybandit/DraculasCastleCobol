@@ -1,0 +1,34 @@
+Welcome to Dracula's Castle. This short text game is a little project i did to learn COBOL in a fun way.
+ 
+You are Van Helsing entering Dracula's Castle you can explore rooms, get equipment and fight enemies. It only has one level, but I might develop it further using JS.
+
+When you are prompted to write a direction ex.(front,left,back) you have to write the whole word.
+
+At any time except combat you can write i and press enter to see your inventory.
+
+At any time except combat you can write equip to see your inventory and choose what item in your inventory to use or equip. In order to choose the item you have to write
+the index number ex. 1)Knive if you want to equip the sword write 2.
+		     2)Sword
+
+Combat-
+
+How combat works is you will be given four choices:
+
+1)Head
+2)Torso
+3)Arms
+4)Legs
+
+You have to write the number of the body part you want to attack.
+Depending on the body part you chose it will have different effects and damage.
+
+1) Head - The head does double the damage but has a 50% chance of missing
+2) Torso - The torso does the base damage and never misses.
+3) Arms - The arms does less damage and have a 35% of missing but if it hits it desarms the enemy and they do less damage.
+4) Legs - The legs does less damage and have a 15% of missing but if it hits it stuns the enemy and they can't attack on their turn.
+
+Note:
+Some enemies have a stunresist that protects them from the first stun attack.
+Some enemies do not have weapons so will not be desarmed.
+
+
